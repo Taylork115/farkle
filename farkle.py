@@ -19,6 +19,15 @@ def scoreDice(dice):
     if values[0] == 0 and values[4] == 0 and no_mults is True:
         return 0  # no score if no 1s, 5s, or 3+ multiples
 
+    # look for runs, either 1,2,3,4,5, 2,3,4,5,6, or 1,2,3,4,5,6
+    runs_score = 0
+    first_five = False
+    last_five = False
+    if values[0] > 0 and values[1] > 0 and values[2] > 0 and values[3] > 0 and values[4] > 0:
+        runs_score = 750
+    if values[5] > 0 and values[1] > 0 and values[2] > 0 and values[3] > 0 and values[4] > 0:
+        runs_score += 750
+
     for i in range(6):
         val = values[i]
         dice_score = dice_values[i]
@@ -37,7 +46,7 @@ def scoreDice(dice):
         elif val == 6:
             scores[i] = scores[i] * 8
 
-    return sum(scores)
+    return sum(scores) + runs_score
 
 
 def main():
