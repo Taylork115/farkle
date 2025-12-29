@@ -13,7 +13,7 @@ def scoreDice(dice):
     for d in range(num_dice):
         val = dice[d] - 1  # since val is an index, and indices start at 0
         values[val] += 1
-    print(values)
+    # print(values)
     no_mults = True
 
     if max(values) >= 3:
@@ -92,25 +92,80 @@ def scoreDice(dice):
     return scores
 
 
+def playTurn():
+    # This function plays one turn of Farkle. It sets up 6 dice, rolls them, and lets the player pick which dice to
+    # use for scoring. Then the remaining dice can be rerolled. If there's a bust, the turn ends with 0 points scored.
+    # Function returns the points scored for this turn.
+
+    dice = [0 for d in range(6)]
+    round_score = 0
+    did_bust = False
+
+    while True:
+        s = input('Press ENTER to roll die, press x to end turn: ')
+
+        if s == 'x':
+            return round_score
+
+        if did_bust:
+            return 0
+        else:
+            if len(dice) == 0:  # covers case where all dice are used for score, and player gets to roll again
+                num_dice = 6
+            else:
+                num_dice = len(dice)  # only roll remaining dice
+
+        dice = [random.randrange(1, 7) for d in range(num_dice)]
+        dice.sort()
+
+        turn_not_over = True
+        took_points = False
+
+        while turn_not_over:
+            print(dice)
+
+            scores = scoreDice(dice)
+
+            if len(scores) == 0:
+                if took_points is False:
+                    print('BUST!')
+                    return 0
+                else:
+                    turn_not_over = False
+
+            else:
+                print(scores)  # TODO: format this printout to look better
+
+                choice = input('Select one score to take (press x to take none): ')
+
+                if choice == 'x':
+                    turn_not_over = False
+
+                else:
+                    took_points = True
+                    score = scores[int(choice)]  # get the score info from the choice selected
+                    points = score[0]  # the number of points
+                    round_score += points
+                    die = score[1]  # the dice used to make those points
+                    for d in die:
+                        dice.remove(d)  # take the scoring dice out of play for now
+
+                    print(f'Score = {round_score}')
+
+
 def main():
     print('Farkle!')
 
-    num_dice = int(input('Enter # of dice: '))
+    orig_num_dice = 6
     dice = []
-    for d in range(num_dice):
+    for d in range(orig_num_dice):
         dice.append(0)
 
+    total_score = 0
+
     while True:
-        input('Press ENTER to roll die')
-        for d in range(num_dice):
-            dice[d] = random.randrange(1, 7)
-        dice.sort()
-
-        print(dice)
-        scores = scoreDice(dice)
-
-        print(scores)
-
+        total_score += playTurn()
+        print(f'PLAYER SCORE = {total_score}')
 
 if __name__ == '__main__':
     main()
