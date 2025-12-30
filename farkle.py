@@ -79,13 +79,16 @@ def scoreDice(dice):
     return scores
 
 
-def scorePrint(scores):
+def printScore(scores):
     # function to nicely print the dictionary of scores returned by scoreDice
     s = 'Choice\tScore\tDice Used\n'
     for x in scores:
         points = scores[x][0]
         dice = scores[x][1]
-        s += f'{x}\t\t{points}\t\t{dice}\n'
+        if points > 999:
+            s += f'{x}\t\t{points}\t{dice}\n'
+        else:
+            s += f'{x}\t\t{points}\t\t{dice}\n'
     print(s)
 
 
@@ -131,9 +134,13 @@ def playTurn():
                     turn_not_over = False
 
             else:
-                scorePrint(scores)
+                printScore(scores)
 
-                choice = input('Select one score to take (press x to take none): ')
+                if took_points is False and len(scores) == 1:
+                    choice = 0
+                    input('Selecting \'0\' since it\'s the only score (ENTER to continue) ')
+                else:
+                    choice = input('Select one score to take (press x to take none): ')
 
                 if choice == 'x':
                     turn_not_over = False
@@ -173,6 +180,7 @@ def main():
             print(f'{p1name}\'s Turn')
             player_1_score += playTurn()
             print(f'{p1name} SCORE = {player_1_score}')
+            print(f'{p2name} SCORE = {player_2_score}')
             if player_1_score >= score_threshold:
                 print(f'{p1name} WINS')
                 return
@@ -180,6 +188,7 @@ def main():
             print(f'{p2name}\'s Turn')
             player_2_score += playTurn()
             print(f'{p2name} SCORE = {player_2_score}')
+            print(f'{p1name} SCORE = {player_1_score}')
             if player_2_score >= score_threshold:
                 print(f'{p2name} WINS')
                 return
