@@ -100,9 +100,14 @@ def playTurn():
     dice = [0 for d in range(6)]
     round_score = 0
     did_bust = False
+    first_roll = True
 
     while True:
-        s = input('Press ENTER to roll die, press x to end turn: ')
+        if first_roll:
+            s = input('Press ENTER to roll die: ')
+            first_roll = False
+        else:
+            s = input('Press ENTER to roll die, or \'x\' to end turn: ')
 
         if s == 'x':
             return round_score
@@ -140,7 +145,7 @@ def playTurn():
                     choice = 0
                     input('Selecting \'0\' since it\'s the only score (ENTER to continue) ')
                 else:
-                    choice = input('Select one score to take (press x to take none): ')
+                    choice = input('Select one score to take, or press \'x\' to pass: ')
 
                 if choice == 'x':
                     turn_not_over = False
