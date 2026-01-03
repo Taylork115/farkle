@@ -3,6 +3,14 @@ import time
 import statistics
 
 
+def stringIsANumber(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+
 def addScore(score_dict, points, dice):
     score_dict[len(score_dict)] = [points, dice]
     return score_dict
@@ -103,9 +111,14 @@ def endTurnOrRoll(ptype, first_roll, round_score):
     #   ptype       - player type (human or otherwise)
     #   first_roll  - bool of whether it's the very first roll in a turn or not
 
-    if ptype == 'man':
+    choice = 'x'
+
+    if first_roll:
+        choice = ''
+
+    elif ptype == 'man':
         if first_roll:
-            return input('Press ENTER to roll die: ')
+            input('Press ENTER to roll die: ')
         else:
             # Player can choose to end their turn after they roll
             return input('Press ENTER to roll die, or \'x\' to end turn: ')
@@ -113,19 +126,17 @@ def endTurnOrRoll(ptype, first_roll, round_score):
     elif ptype =='dumbAss':
         # dumbAss always quits after the first roll...
         if not first_roll:
-            return 'x'
-        else:
-            return ''
+            choice = 'x'
 
     # highRolla will always roll until he either busts or has some high number of points (1000+)
     elif ptype == 'highRolla':
         points_to_get = 1000  # amount of points that highRolla wants in one round
         if round_score >= points_to_get:
-            return 'x'
+            choice = 'x'
         else:
-            return ''
+            choice = ''
 
-    return '???'  # deliberately weird string to catch missed cases
+    return choice
 
 
 def getHighestScoringOption(scores):
@@ -145,7 +156,10 @@ def chooseScoreToTake(ptype, scores, round_score, took_points):
 
     # Human player gets to pick what option to take
     if ptype == 'man':
-        return input('Select one score to take, or press \'x\' to pass: ')
+        choice = ''
+        while not (stringIsANumber(choice) or choice == 'x'):
+            choice = input('Select one score to take, or press \'x\' to pass: ')
+        return choice
 
     # dumbAss will take the highest available score ONCE, then cede their turn
     elif ptype == 'dumbAss':
@@ -206,6 +220,9 @@ def playTurn(ptype, sleep_time=3, show_print=True):
         dice = [random.randrange(1, 7) for d in range(num_dice)]
         dice.sort()
 
+        if show_print:
+            print('ROLLING THE DICE! ')
+
         turn_is_over = False
         took_points = False
 
@@ -219,7 +236,7 @@ def playTurn(ptype, sleep_time=3, show_print=True):
 
             # Determine if there's a BUST!
             if len(scores) == 0:
-                if took_points is False:
+                if not took_points:
                     if show_print:
                         print('BUST!')
                     return 0
@@ -234,7 +251,9 @@ def playTurn(ptype, sleep_time=3, show_print=True):
                 # case where there's only one option right off the roll, so user HAS to take it
                 if took_points is False and len(scores) == 1:
                     if ptype == 'man':
-                        input('Selecting \'0\' since it\'s the only score (ENTER to continue) ')
+                        choice = ''
+                        while choice != '0':
+                            choice = input('Select \'0\' since it\'s the only score: ')
                     choice = 0
                 else:
                     # case where there are multiple options for points
