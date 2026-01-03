@@ -1,5 +1,6 @@
 import random
 import time
+import statistics
 
 
 def addScore(score_dict, points, dice):
@@ -329,6 +330,9 @@ def playGame(p1, p2, score_to_win):
 def main():
     print('Farkle!')
 
+    default_score_thresh = 5000
+    default_num_games = 10
+
     print('COMPUTER PLAYERS ARE')
     print('1. dumbAss (easy)')
     print('2. highRolla (med)')
@@ -360,20 +364,22 @@ def main():
     play_again = True
     while play_again:
 
-        score_threshold_str = input('Enter score to play to (leave blank for 5000): ')
+        score_threshold_str = input(f'Enter score to play to (leave blank for {default_score_thresh}): ')
         if score_threshold_str == '':
-            score_threshold = 5000
+            score_threshold = default_score_thresh
         else:
             score_threshold = int(score_threshold_str)
 
-        num_games_str = input('Enter # games to play (leave blank for 1): ')
+        num_games_str = input(f'Enter # games to play (leave blank for {default_num_games}): ')
         if num_games_str == '':
-            num_games = 1
+            num_games = default_num_games
         else:
             num_games = int(num_games_str)
 
         player1 = Player(p1name, p1type)
         player2 = Player(p2name, p2type)
+
+        players = [player1, player2]
 
         player1_points = []
         player2_points = []
@@ -385,10 +391,21 @@ def main():
 
         # print the stats
         print('NUMBER OF WINS:')
-        print(f'{player1.name}:\t\t{player1.victories}')
-        print(f'{player2.name}:\t\t{player2.victories}')
-        print('')
-        #print(f'{player1.name} POINTS STATS')
+        for p in players:
+            print(f'{p.name}:\t\t{p.victories}')
+
+        if num_games > 1:
+            # calculate the stats
+            avg1 = statistics.mean(player1_points)
+            med1 = statistics.median(player1_points)
+            dev1 = statistics.stdev(player1_points)
+            avg2 = statistics.mean(player2_points)
+            med2 = statistics.median(player2_points)
+            dev2 = statistics.stdev(player2_points)
+
+            print(f'POINTS\tAVG\t\t\tMED\t\t\tSTD DEV')
+            print(f'P1:\t\t{avg1:.1f}\t\t{med1:.0f}\t\t{dev1:.1f}')
+            print(f'P2:\t\t{avg2:.1f}\t\t{med2:.0f}\t\t{dev2:.1f}')
 
         play_again = input('Press ENTER to play again, \'x\' to quit: ') != 'x'
 
