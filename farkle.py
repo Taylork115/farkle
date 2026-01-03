@@ -163,7 +163,7 @@ def chooseScoreToTake(ptype, scores, round_score, took_points):
     return 0
 
 
-def playTurn(ptype, sleep_time=3):
+def playTurn(ptype, sleep_time=3, show_print=True):
     # This function plays one turn of Farkle. It sets up 6 dice, rolls them, and lets the player pick which dice to
     # use for scoring. Then the remaining dice can be rerolled. If there's a bust, the turn ends with 0 points scored.
     # Function returns the points scored for this turn.
@@ -183,7 +183,8 @@ def playTurn(ptype, sleep_time=3):
             first_roll = False
 
         if not ptype == 'man' and end_turn:
-            print(f'{ptype} is ending their turn...')
+            if show_print:
+                print(f'{ptype} is ending their turn...')
             time.sleep(sleep_time)
 
         # User chose to end the round
@@ -209,7 +210,8 @@ def playTurn(ptype, sleep_time=3):
 
         while not turn_is_over:
             # Show the dice rolled
-            print(f'Dice remaining:\n{dice}')
+            if show_print:
+                print(f'Dice remaining:\n{dice}')
 
             # Get the list of scoring dice
             scores = scoreDice(dice)
@@ -217,14 +219,16 @@ def playTurn(ptype, sleep_time=3):
             # Determine if there's a BUST!
             if len(scores) == 0:
                 if took_points is False:
-                    print('BUST!')
+                    if show_print:
+                        print('BUST!')
                     return 0
                 else:  # have already taken points from this roll, and there's no more scores to take
                     turn_is_over = True
 
             # Otherwise points are able to be taken
             else:
-                printScore(scores)  # print the available scores in a nice format
+                if show_print:
+                    printScore(scores)  # print the available scores in a nice format
 
                 # case where there's only one option right off the roll, so user HAS to take it
                 if took_points is False and len(scores) == 1:
@@ -236,7 +240,7 @@ def playTurn(ptype, sleep_time=3):
                     choice = chooseScoreToTake(ptype, scores, round_score, took_points)
 
                 # Report what action the computer took, if needed
-                if not ptype == 'man':
+                if not ptype == 'man' and show_print:
                     if choice == 'x':
                         print(f'{ptype} is taking no more points...')
                     else:
@@ -260,17 +264,70 @@ def playTurn(ptype, sleep_time=3):
 
                     # Add the scoring points to the running round total
                     round_score += points
-                    print(f'Score = {round_score}')
+                    if show_print:
+                        print(f'Score = {round_score}')
+
+
+class Player:
+    def __init__(self, name, ptype):
+        self.name = name
+        self.type = ptype
+        self.points = 0
+        self.victories = 0
+                    
+                    
+def playGame(p1, p2, score_to_win):
+    
+    if not p1.type == 'man' and not p2.type == 'man':
+        turn_delay = 0  # computers play FAST against each other
+        show_print = False
+    else:
+        turn_delay = 3
+        show_print = True
+
+    p1.points = 0
+    p2.points = 0
+
+    player_1s_turn = bool(random.getrandbits(1))
+
+    if show_print:
+        while True:
+            if player_1s_turn:
+                print(f'{p1.name}\'s Turn')
+                p1.points += playTurn(p1.type, turn_delay, show_print)
+                print(f'{p1.name} SCORE = {p1.points}')
+                print(f'{p2.name} SCORE = {p2.points}')
+                if p1.points >= score_to_win:
+                    print(f'{p1.name} WINS')
+                    p1.victories += 1
+                    return p1.name
+            else:
+                print(f'{p2.name}\'s Turn')
+                p2.points += playTurn(p2.type, turn_delay, show_print)
+                print(f'{p2.name} SCORE = {p2.points}')
+                print(f'{p1.name} SCORE = {p1.points}')
+                if p2.points >= score_to_win:
+                    print(f'{p2.name} WINS')
+                    p2.victories += 1
+                    return p2.name
+            player_1s_turn = not player_1s_turn
+    else:
+        while True:
+            if player_1s_turn:
+                p1.points += playTurn(p1.type, turn_delay, show_print)
+                if p1.points >= score_to_win:
+                    p1.victories += 1
+                    return p1.name
+            else:
+                p2.points += playTurn(p2.type, turn_delay, show_print)
+                if p2.points >= score_to_win:
+                    p2.victories += 1
+                    return p2.name
+            player_1s_turn = not player_1s_turn
 
 
 def main():
     print('Farkle!')
-
-    score_threshold_str = input('Enter score to play to (leave blank for 5000): ')
-    if score_threshold_str == '':
-        score_threshold = 5000
-    else:
-        score_threshold = int(score_threshold_str)
 
     print('COMPUTER PLAYERS ARE')
     print('1. dumbAss (easy)')
@@ -300,36 +357,40 @@ def main():
     else:
         p2type = p2name
 
-    if not p1type == 'man' and not p2type == 'man':
-        turn_delay = 0  # computers play FAST against each other
-    else:
-        turn_delay = 3
+    play_again = True
+    while play_again:
 
-    player_1_score = 0
-    player_2_score = 0
-
-    player_1s_turn = bool(random.getrandbits(1))
-
-    while True:
-        if player_1s_turn:
-            print(f'{p1name}\'s Turn')
-            player_1_score += playTurn(p1type, turn_delay)
-            print(f'{p1name} SCORE = {player_1_score}')
-            print(f'{p2name} SCORE = {player_2_score}')
-            if player_1_score >= score_threshold:
-                print(f'{p1name} WINS')
-                return
+        score_threshold_str = input('Enter score to play to (leave blank for 5000): ')
+        if score_threshold_str == '':
+            score_threshold = 5000
         else:
-            print(f'{p2name}\'s Turn')
-            player_2_score += playTurn(p2type, turn_delay)
-            print(f'{p2name} SCORE = {player_2_score}')
-            print(f'{p1name} SCORE = {player_1_score}')
-            if player_2_score >= score_threshold:
-                print(f'{p2name} WINS')
-                return
+            score_threshold = int(score_threshold_str)
 
-        player_1s_turn = not player_1s_turn
+        num_games_str = input('Enter # games to play (leave blank for 1): ')
+        if num_games_str == '':
+            num_games = 1
+        else:
+            num_games = int(num_games_str)
 
+        player1 = Player(p1name, p1type)
+        player2 = Player(p2name, p2type)
+
+        player1_points = []
+        player2_points = []
+
+        for n in range(num_games):
+            playGame(player1, player2, score_threshold)
+            player1_points.append(player1.points)
+            player2_points.append(player2.points)
+
+        # print the stats
+        print('NUMBER OF WINS:')
+        print(f'{player1.name}:\t\t{player1.victories}')
+        print(f'{player2.name}:\t\t{player2.victories}')
+        print('')
+        #print(f'{player1.name} POINTS STATS')
+
+        play_again = input('Press ENTER to play again, \'x\' to quit: ') != 'x'
 
 if __name__ == '__main__':
     main()
